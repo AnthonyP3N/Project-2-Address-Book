@@ -55,6 +55,7 @@ Status list_contacts(AddressBook *address_book, const char *title, int *index, c
 	 * The menu provide navigation option if the entries increase the page size
 	 */ 
 
+
 	return e_success;
 }
 
