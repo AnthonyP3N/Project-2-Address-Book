@@ -109,7 +109,7 @@ Status menu(AddressBook *address_book)
 		switch (option)
 		{
 			case e_add_contact:
-				/* Add your implementation to call add_contacts function here */
+				add_contacts(address_book);
 				break;
 			case e_search_contact:
 				search_contact(address_book);
@@ -136,7 +136,74 @@ Status menu(AddressBook *address_book)
 
 Status add_contacts(AddressBook *address_book)
 {
-	/* Add the functionality for adding contacts here */
+	// getting new contact details
+	if (!address_book)
+	{
+		return e_fail;
+	}
+
+	int answer;
+	ContactInfo new_contact;
+
+	while (answer == !0)
+	{
+		printf("####### Address Book ####### \n");
+		printf("####### Add contact \n\n");
+		printf("0. Back \n");
+		printf("1. Name: ");
+		printf("%s", new_contact.name, "\n");
+		printf("2. Phone Number ID: ");
+		printf("%s", new_contact.phone_numbers, "\n");
+		printf("3. Email ID: ");
+		printf("%s", new_contact.email_addresses, "\n\n");
+		printf("Please select an option");
+
+		switch(answer)
+		{
+
+			case 1:
+			printf("Enter Name: ");
+			fgets(new_contact.name[0], NAME_LEN, stdin);
+			new_contact.name[0][strcspn(new_contact.name[0], "\n")] = '\0';
+			break;
+
+			case 2:
+			printf("Enter Phone Number ID: ");
+			fgets(new_contact.phone_numbers[0], NUMBER_LEN, stdin);
+			new_contact.phone_numbers[0][strcspn(new_contact.phone_numbers[0], "\n")] = '\0';
+			break;
+
+			case 3:
+			printf("Enter Email: ");
+			fgets(new_contact.email_addresses[0], EMAIL_ID_LEN, stdin);
+			new_contact.email_addresses[0][strcspn(new_contact.email_addresses[0], "\n")] = '\0';
+			break;
+
+			default:
+			printf("\nPlease select an option");
+			break;
+		}		
+	}
+	
+	new_contact.si_no = address_book -> count + 1;
+
+	address_book -> list = realloc(address_book -> list, (address_book -> count + 1) * sizeof(ContactInfo));
+	if (!address_book -> list)
+	{
+		printf("Memory allocation failed. \n");
+		return e_fail;
+	}
+
+	address_book -> list[address_book -> count] = new_contact;
+	address_book -> count++;
+
+	printf("Contact added successfully.\n");
+	return e_success;
+
+	if (answer == 0)
+	{
+		main_menu();
+	}
 }
 
 Status search(const char *str, AddressBook *address_book, int loop_count, int field, const char *msg, Modes mode)
