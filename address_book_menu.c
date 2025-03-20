@@ -380,9 +380,140 @@ Status search_contact(AddressBook *address_book)
 Status edit_contact(AddressBook *address_book)
 {
 	/* Add the functionality for edit contacts here */
-}
+
+	if(address_book->count == 0){
+		printf("There are no contacts available to edit.\n");
+		return e_no_match;
+	}
+
+	char search_in[EMAIL_ID_LEN];
+	int stype;
+	int i;
+	int found = 0; 
+
+	printf("\nEdit Contact\n");
+	printf("Search by: \n1.");
+	printf("Name \n2.");
+	printf("Phone Number \n3.");
+	printf("Email \n");
+	printf("Choose an option (1-3): ");
+	scanf("%d", &stype);
+	getchar();
+
+	printf("Enter search term: ");
+	fgets(search_in, sizeof(search_in), stdin);
+	search_in[strcspn(search_in, "\n")] = 0;
+
+	for(i=0; i< address_book->count; i++){
+		ContactInfo *contact = &address_book->list[i];
+		if((stype == 1 && strcmp(contact->name[0], search_in) == 0)||
+			(stype == 2 && strcmp(contact->phone_numbers[0], search_in) == 0)||
+			(stype == 3 && strcmp(contact->email_addresses[0], search_in) == 0)){
+				found = 1;
+				printf("\nContact found:\n");
+				printf("Name: %s\n", contact->name[0]);
+				printf("Phone: %s\n", contact->phone_numbers[0]);
+				printf("Email: %s\n", contact->email_addresses[0]);
+
+				printf("\n Which would you like to edit?\n1.");
+				printf("Name \n2.");
+				printf("Phone Number \n3.");
+				printf("Email \n");
+				printf("Choose an option (1-3): ");
+
+				int edit_option;
+				scanf("%d", &edit_option);
+				getchar();
+
+				if(edit_option == 1){
+					printf("Enter a new name: ");
+					fgets(contact->name[0], NAME_LEN, stdin);
+					contact->name[0][strcspn(contact->name[0], "\n")] = 0;
+				}else if(edit_option == 2){
+					printf("Enter new phone number: ");
+					fgets(contact->phone_numbers[0], NUMBER_LEN, stdin);
+					contact->phone_numbers[0][strcspn(contact->phone_numbers[0], "\n")] = 0;
+				}else if(edit_option == 3){
+					printf("Enter a new email: ");
+					fgets(contact->email_addresses[0], EMAIL_ID_LEN, stdin);
+					contact->email_addresses[0][strcspn(contact->email_addresses[0], "\n")] = 0;
+				}else{
+					printf("Invalid choice. Edit failed.\n");
+					return e_fail;
+				}
+
+				printf("\nContact updated successfully!\n");
+				save_file(address_book);
+				return e_success;
+			}
+		}
+		
+		if(!found){
+			printf("\n No matching contact informaiton found.\n");
+			return e_no_match;
+		}
+
+		return e_fail;
+	}
 
 Status delete_contact(AddressBook *address_book)
 {
 	/* Add the functionality for delete contacts here */
+
+	if(address_book->count == 0){
+		printf("There are no contacts available to delete.\n");
+		return e_no_match;
+	}
+
+	char search_in[EMAIL_ID_LEN];
+	int stype;
+	int i;
+	int found = -1; 
+
+	printf("\n Delete Contact\n");
+	printf("Search by: \n1.");
+	printf("Name \n2.");
+	printf("Phone Number \n3.");
+	printf("Email \n");
+	printf("Choose an option (1-3): ");
+	scanf("%d", &stype);
+	getchar();
+
+	printf("Enter search term: ");
+	fgets(search_in, sizeof(search_in), stdin);
+	search_in[strcspn(search_in, "\n")] = 0;
+
+	for(i=0; i< address_book->count; i++){
+		ContactInfo *contact = &address_book->list[i];
+		if((stype == 1 && strcmp(contact->name[0], search_in) == 0)||
+			(stype == 2 && strcmp(contact->phone_numbers[0], search_in) == 0)||
+			(stype == 3 && strcmp(contact->email_addresses[0], search_in) == 0)){	
+			
+			found = i;
+			printf("\nContact found:\n");
+			printf("Name: %s\n",contact->name[0]);
+			printf("Phone: %s\n",contact->phone_numbers[0]);
+			printf("Email: %s\n",contact->email_addresses[0]);
+			
+			printf("\nAre you sure you want to delete this contact? (Y/N): ");
+			char confirm;
+			scanf(" %c", &confirm);
+			confirm = tolower(confirm);
+
+			if(confirm == 'y'){
+				for(int j = found; j < address_book->count - 1; j++){
+					address_book->list[j] = address_book -> list[j+1];
+				}
+				address_book->count--;
+				printf("\nContact deleted successfully!\n");
+				save_file(address_book);
+				return e_success;
+			}else{
+				printf("\nDeletion canceled.\n");
+				return e_fail;
+			}
+		}
+	}
+	printf("\nNo matching contact found.\n");
+	return e_no_match;
 }
