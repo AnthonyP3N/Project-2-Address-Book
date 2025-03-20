@@ -49,14 +49,58 @@ Status save_prompt(AddressBook *address_book)
 
 Status list_contacts(AddressBook *address_book, const char *title, int *index, const char *msg, Modes mode)
 {
-	/* 
-	 * Add code to list all the contacts availabe in address_book.csv file
-	 * Should be menu based
-	 * The menu provide navigation option if the entries increase the page size
-	 */ 
-
-
-	return e_success;
+		/* 
+		 * Add code to list all the contacts availabe in address_book.csv file
+		 * Should be menu based
+		 * The menu provide navigation option if the entries increase the page size
+		 */ 
+		 if (address_book->count == 0) {
+			 printf("There are no contacts available yet. If you would like to add contacts, please quit and select add contacts in menu options.\n");
+			 return e_no_match;
+		 }
+		 
+		 int page = 0;
+		 int total_pages = address_book->count + WINDOW_SIZE - 1/ WINDOW_SIZE; //count total number of pages needed
+		 char option;
+		 
+		 do{
+			 printf("==============================================================================================================");
+			 printf("%-3s %-7s %-3s %-30s %-3s %-20s %-3s %-30s %-3s\n",":", "S.No",":", "Name", ":", "Phone No", ":", "Email ID", ":" );
+			 printf("==============================================================================================================");
+			 
+			for (int i = page * WINDOW_SIZE; i < (page + 1) * WINDOW_SIZE && i < address_book->count; i++)
+			{
+				ContactInfo *contact = &address_book->list[i];
+				printf("%-3s %-7s %-3s %-30s %-3s %-20s %-3s %-30s %-3s\n", 
+					   ":",
+					   contact->si_no,
+					   ":", 
+					   contact->name[0], 
+					   ":",
+					   contact->phone_numbers[0], 
+					   ":",
+					   contact->email_addresses[0],
+						" :");
+			}
+			
+			printf("-------------------------------------------------------------------------------\n");
+			printf("Page %d of %d. Use 'N' for next, 'P' for previous, 'Q' to quit: ", page + 1, total_pages);
+			option = getchar();
+			while (getchar() != '\n'); // Clear input buffer
+	
+			if (option == 'N' || option == 'n')
+			{
+				if (page < total_pages - 1)
+					page++;
+			}
+			else if (option == 'P' || option == 'p')
+			{
+				if (page > 0)
+					page--;
+			}
+		} while (option != 'Q' && option != 'q');
+	
+		return e_success;
 }
 
 void menu_header(const char *str)
@@ -121,6 +165,7 @@ Status menu(AddressBook *address_book)
 				delete_contact(address_book);
 				break;
 			case e_list_contacts:
+				list_contacts(address_book, "List of Contacts", NULL, NULL, e_list);
 				break;
 				/* Add your implementation to call list_contacts function here */
 			case e_save:

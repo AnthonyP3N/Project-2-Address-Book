@@ -58,7 +58,7 @@ Status save_file(AddressBook *address_book)
 		ContactInfo *contact = &address_book->list[i];
 	
 		for(int j = 0; j < PHONE_NUMBER_COUNT; j++){
-			fprintf(address_book->fp, "%s", contact->name[0]);
+		fprintf(address_book->fp, "%s", contact->name[0]);
 		}
 
 		for(int k = 0; k < EMAIL_ID_COUNT; k++){
