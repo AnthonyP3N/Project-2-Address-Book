@@ -20,12 +20,12 @@ int main(void)
 		/* Show all the available menu */
 		ret = menu(&address_book);
 
-		if (ret == e_success)
+		if (ret == e_exit && address_book.count > 0)
 		{
 			/* Save the entries */
 			save_prompt(&address_book);
 		}
 	}
-
+	printf("Program exited successfully.\n");
 	return 0;
 }
