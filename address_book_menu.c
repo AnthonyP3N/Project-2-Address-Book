@@ -74,61 +74,30 @@ Status list_contacts(AddressBook *address_book, const char *title, int *index, c
         return e_no_match;
     }
 
-    int page = 0;
-    int total_pages = (address_book->count + WINDOW_SIZE - 1) / WINDOW_SIZE;
-    char option;
+    printf("==============================================================================================================\n");
+    printf("%-3s %-7s %-3s %-30s %-3s %-20s %-3s %-30s %-3s\n", 
+           ":", "S.No", ":", "Name", ":", "Phone Numbers", ":", "Email IDs", ":");
+    printf("==============================================================================================================\n");
 
-    do
+    for (int i = 0; i < address_book->count; i++)
     {
-        printf("==============================================================================================================\n");
-        printf("%-3s %-7s %-3s %-30s %-3s %-20s %-3s %-30s %-3s\n", 
-               ":", "S.No", ":", "Name", ":", "Phone Numbers", ":", "Email IDs", ":");
-        printf("==============================================================================================================\n");
+        ContactInfo *contact = &address_book->list[i];
 
-        for (int i = page * WINDOW_SIZE; i < (page + 1) * WINDOW_SIZE && i < address_book->count; i++)
+        printf("%-3s %-7d %-3s %-30s %-3s %-20s %-3s %-30s %-3s\n",
+               ":", contact->si_no, ":", contact->name[0], ":",
+               (contact->phone_count > 0) ? contact->phone_numbers[0] : "", ":",
+               (contact->email_count > 0) ? contact->email_addresses[0] : "", ":");
+
+        for (int j = 1; j < contact->email_count; j++)
         {
-            ContactInfo *contact = &address_book->list[i];
-
-            if (!contact) continue;
-
-            int max_rows = (contact->phone_count > contact->email_count) ? contact->phone_count : contact->email_count;
-
-            //  Print first row with name, first phone, and first email
-            printf("%-3s %-7d %-3s %-30s %-3s %-20s %-3s %-30s %-3s\n",
-                   ":", contact->si_no, ":", contact->name[0], ":",
-                   (contact->phone_count > 0) ? contact->phone_numbers[0] : "", ":",
-                   (contact->email_count > 0) ? contact->email_addresses[0] : "", ":");
-
-            //  Print remaining rows with phones and emails correctly aligned
-            for (int j = 1; j < max_rows; j++)
-            {
-                printf("%-3s %-7s %-3s %-30s %-3s %-20s %-3s %-30s %-3s\n",
-                       ":", "", ":", "", ":",
-                       (j < contact->phone_count) ? contact->phone_numbers[j] : "", ":",
-                       (j < contact->email_count) ? contact->email_addresses[j] : "", ":");
-            }
-
-            //  Add a separator between contacts (but not at the end)
-            if (i < (page + 1) * WINDOW_SIZE - 1 && i < address_book->count - 1) 
-            {
-                printf("--------------------------------------------------------------------------------------------------------------\n");
-            }
+            printf("%-3s %-7s %-3s %-30s %-3s %-20s %-3s %-30s %-3s\n",
+                   ":", "", ":", "", ":",
+                   (j < contact->phone_count) ? contact->phone_numbers[j] : "", ":",
+                   contact->email_addresses[j], ":");  // Ensure emails print correctly
         }
 
-        printf("\n-------------------------------------------------------------------------------\n");
-        printf("Page %d of %d. Use 'N' for next, 'P' for previous, 'Q' to quit: ", page + 1, total_pages);
-        option = getchar();
-        while (getchar() != '\n');  // Clear input buffer
-
-        if ((option == 'N' || option == 'n') && page < total_pages - 1)
-        {
-            page++;
-        }
-        else if ((option == 'P' || option == 'p') && page > 0)
-        {
-            page--;
-        }
-    } while (option != 'Q' && option != 'q');
+        printf("--------------------------------------------------------------------------------------------------------------\n");
+    }
 
     return e_success;
 }
