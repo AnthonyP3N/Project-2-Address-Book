@@ -21,6 +21,9 @@ int get_option(int type, const char *msg)
 	 */ 
 
 	/* Fill the code to add above functionality */
+	scanf("%d", type);
+	fgets(msg, NAME_LEN, stdin);
+	return type;
 }
 
 Status save_prompt(AddressBook *address_book)
