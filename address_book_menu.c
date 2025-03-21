@@ -99,6 +99,8 @@ Status list_contacts(AddressBook *address_book, const char *title, int *index, c
         printf("--------------------------------------------------------------------------------------------------------------\n");
     }
 
+    printf("\nPress ENTER to return to the main menu...");
+    while (getchar() != '\n');
     return e_success;
 }
 
@@ -117,7 +119,7 @@ void menu_header(const char *str)
 }
 void main_menu(void)
 {
-    printf("#######  Address Book  #######\n");
+    printf("\n#######  Address Book  #######\n");
     printf("0. Exit\n");
     printf("1. Add Contact\n");
     printf("2. Search Contact\n");
@@ -354,117 +356,100 @@ Status search(const char *str, AddressBook *address_book, int loop_count, int fi
 
 Status search_contact(AddressBook *address_book)
 {
-	/* Add the functionality for search contacts here */
-	if (address_book->count == 0) {
+    if (address_book->count == 0)
+    {
         printf("\nNo contacts available.\n");
         return e_no_match;
     }
 
-	char search_key[NAME_LEN];
-		int i, match_count = 0;
-	
-		// Display search options
-		printf("\nSearch Contact by:\n");
-        printf("0. Back\n");
-		printf("1. Name\n");
-		printf("2. Phone Number\n");
-		printf("3. Email Address\n");
-		printf("Please select an option: ");
-	
-		int option;
-		scanf("%d", &option);
-		getchar();  // Clear input buffer 
-	
-		// Prompt user for input based on search type
-		switch (option)
-		{
-			case 1: // Search by Name
-				printf("\nEnter the name: ");
-				fgets(search_key, NAME_LEN, stdin);
-				search_key[strcspn(search_key, "\n")] = 0;  // Remove newline
-				break;
-	
-			case 2: // Search by Phone #
-				printf("\nEnter the phone number: ");
-				fgets(search_key, NUMBER_LEN, stdin);
-				search_key[strcspn(search_key, "\n")] = 0;
-				break;
-	
-			case 3: // Search by Email Address
-				printf("\nEnter the email address: ");
-				fgets(search_key, EMAIL_ID_LEN, stdin);
-				search_key[strcspn(search_key, "\n")] = 0;
-				break;
+    char search_key[NAME_LEN];
+    int i, match_count = 0;
 
-            case 0:
-                printf("\nReturning to main menu...\n");
-                break;
-	
-			default:
-				printf("\nInvalid option. Please try again.\n");
-				return e_fail;
-		}
-	
-		// Display header for search results
-		printf("\n###### Address Book ######\n");
-		printf("###### Search Result:\n");
-		printf("\nS.No : Name              : Phone No      : Email ID\n");
-		printf("-------------------------------------------------------------\n");
-	
-		// Loop through the contacts to find a match
-		for (i = 0; i < address_book->count; i++)
-		{
-			ContactInfo contact = address_book->list[i];
-			bool_t is_match = 0;
-	
-			switch (option)
-			{
-				case 1: // Match name
-					if (strcasecmp(contact.name[0], search_key) == 0)
-					{
-						is_match = 1;
-					}
-					break;
-	
-				case 2: // Match phone number
-					if (strcasecmp(contact.phone_numbers[0], search_key) == 0)
-					{
-						is_match = 1;
-					}
-					break;
-	
-				case 3: // Match email
-					if (strcasecmp(contact.email_addresses[0], search_key) == 0)
-					{
-						is_match = 1;
-					}
-					break;
-			}
-            if (option == 0){
-                printf("\nReturning to main menu...\n");
-                return e_success;
+    printf("\nSearch Contact by:\n");
+    printf("0. Back\n");
+    printf("1. Name\n");
+    printf("2. Phone Number\n");
+    printf("3. Email Address\n");
+    printf("Please select an option: ");
+
+    int option;
+    scanf("%d", &option);
+    getchar(); // clear input buffer
+
+    if (option == 0)
+    {
+        printf("\nReturning to main menu...\n");
+        return e_success;
+    }
+
+    printf("\nEnter the search keyword: ");
+    fgets(search_key, sizeof(search_key), stdin);
+    search_key[strcspn(search_key, "\n")] = 0;
+
+    printf("\n###### Address Book ######\n");
+    printf("###### Search Results:\n");
+    printf("-------------------------------------------------------------\n");
+
+    for (i = 0; i < address_book->count; i++)
+    {
+        ContactInfo *contact = &address_book->list[i];
+        bool_t is_match = 0;
+
+        if (option == 1 && strcasecmp(contact->name[0], search_key) == 0)
+        {
+            is_match = 1;
+        }
+        else if (option == 2)
+        {
+            for (int j = 0; j < contact->phone_count; j++)
+            {
+                if (strcasecmp(contact->phone_numbers[j], search_key) == 0)
+                {
+                    is_match = 1;
+                    break;
+                }
             }
-		   
-			if (is_match)
-			{
-				// Display contact with Serial No
-				printf("%-5d : %-17s : %-13s : %s\n", contact.si_no, contact.name[0], contact.phone_numbers[0], contact.email_addresses[0]);
-				match_count++;
-			}
-		}
-	
-		if (match_count == 0)
-		{
-			printf("\nNo matching contact found.\n");
-		}
-	
-		printf("-------------------------------------------------------------\n");
-		printf("Press: [q] | Cancel:\n");
-		
-		getchar();
+        }
+        else if (option == 3)
+        {
+            for (int j = 0; j < contact->email_count; j++)
+            {
+                if (strcasecmp(contact->email_addresses[j], search_key) == 0)
+                {
+                    is_match = 1;
+                    break;
+                }
+            }
+        }
 
-		return e_success;
+        if (is_match)
+        {
+            match_count++;
+            printf("S.No: %d\n", contact->si_no);
+            printf("Name: %s\n", contact->name[0]);
+
+            for (int j = 0; j < contact->phone_count; j++)
+            {
+                printf("Phone %d: %s\n", j + 1, contact->phone_numbers[j]);
+            }
+
+            for (int j = 0; j < contact->email_count; j++)
+            {
+                printf("Email %d: %s\n", j + 1, contact->email_addresses[j]);
+            }
+
+            printf("-------------------------------------------------------------\n");
+        }
+    }
+
+    if (match_count == 0)
+    {
+        printf("No matching contact found.\n");
+    }
+
+    return e_success;
 }
+
 
 Status edit_contact(AddressBook *address_book)
 {
