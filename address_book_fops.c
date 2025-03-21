@@ -13,63 +13,140 @@ Status load_file(AddressBook *address_book)
 	/* 
 	 * Check for file existance
 	 */
-	struct stat buffer; 
-	int ret = stat(DEFAULT_FILE, &buffer);
+    FILE *fp = fopen(DEFAULT_FILE, "r");
+    if (!fp)
+    {
+        printf("No existing address book found. Creating a new one...\n");
 
-	if (ret == 0)
-	{
-		/* 
-		 * Do the neccessary step to open the file
-		 * Do error handling
-		 */ 
-		address_book->fp = fopen(DEFAULT_FILE, "r"); 
+        fp = fopen(DEFAULT_FILE, "w");
+        if (!fp)
+        {
+            printf("Error: Could not create file %s\n", DEFAULT_FILE);
+            return e_fail;
+        }
+        fclose(fp);
 
-	}
-	else
-	{
-		/* Create a file for adding entries */
-		address_book->fp = fopen(DEFAULT_FILE, "w");
-	}
+        address_book->count = 0;
+        address_book->list = NULL;
+        return e_success;
+    }
 
-	if (address_book->fp == NULL){
-		return e_fail;
-	}
+    address_book->count = 0;
+    address_book->list = NULL;
 
-	return e_success;
+    char line[256];
+    ContactInfo new_contact = {0};  //  Temporary storage for one contact
+
+    while (fgets(line, sizeof(line), fp))
+    {
+        line[strcspn(line, "\n")] = '\0';  //  Remove newline character
+
+        if (strncmp(line, "S:", 2) == 0)  //  Serial Number
+        {
+            new_contact.si_no = atoi(line + 2);
+        }
+        else if (strncmp(line, "N:", 2) == 0)  //  Name
+        {
+            strncpy(new_contact.name[0], line + 2, NAME_LEN);
+            new_contact.name[0][NAME_LEN - 1] = '\0';
+        }
+        else if (strncmp(line, "P:", 2) == 0)  //  Phone Numbers
+        {
+            if (new_contact.phone_count < PHONE_NUMBER_COUNT)
+            {
+                strncpy(new_contact.phone_numbers[new_contact.phone_count], line + 2, NUMBER_LEN);
+                new_contact.phone_numbers[new_contact.phone_count][NUMBER_LEN - 1] = '\0';
+                new_contact.phone_count++;
+            }
+        }
+        else if (strncmp(line, "E:", 2) == 0)  //  Email Addresses
+        {
+            if (new_contact.email_count < EMAIL_ID_COUNT)
+            {
+                strncpy(new_contact.email_addresses[new_contact.email_count], line + 2, EMAIL_ID_LEN);
+                new_contact.email_addresses[new_contact.email_count][EMAIL_ID_LEN - 1] = '\0';
+                new_contact.email_count++;
+            }
+        }
+        else if (strcmp(line, "END") == 0)  //  Marks End of One Contact
+        {
+            //  Store contact in address book
+            ContactInfo *temp = realloc(address_book->list, (address_book->count + 1) * sizeof(ContactInfo));
+            if (!temp)
+            {
+                printf("Error: Memory allocation failed while loading file.\n");
+                fclose(fp);
+                return e_fail;
+            }
+            address_book->list = temp;
+            address_book->list[address_book->count] = new_contact;
+            address_book->count++;
+
+            //  Reset `new_contact` for the next entry
+            memset(&new_contact, 0, sizeof(ContactInfo));
+        }
+    }
+
+    fclose(fp);
+    printf("Contacts successfully loaded from %s\n", DEFAULT_FILE);
+    return e_success;
 }
 
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 Status save_file(AddressBook *address_book)
 {
 	/*
 	 * Write contacts back to file.
 	 * Re write the complete file currently
 	 */ 
-	address_book->fp = fopen(DEFAULT_FILE, "w");
+    if (!address_book || !address_book->list)
+    {
+        printf("Error: No contacts to save.\n");
+        return e_fail;
+    }
 
-	if (address_book->fp == NULL)
-	{
-		return e_fail;
-	}
-	/* 
-	 * Add the logic to save the file
-	 * Make sure to do error handling
-	 */ 
-	for(int i = 0; i < address_book->count; i++){
-		ContactInfo *contact = &address_book->list[i];
-	
-		for(int j = 0; j < PHONE_NUMBER_COUNT; j++){
-			fprintf(address_book->fp, "%s", contact->name[0]);
-		}
+    FILE *fp = fopen(DEFAULT_FILE, "w");
+    if (!fp)
+    {
+        printf("Error: Unable to open file for saving.\n");
+        return e_fail;
+    }
 
-		for(int k = 0; k < EMAIL_ID_COUNT; k++){
-			fprintf(address_book->fp, "%s", contact->name[0]);
-		}
+    for (int i = 0; i < address_book->count; i++)
+    {
+        ContactInfo *contact = &address_book->list[i];
 
-		fprintf(address_book->fp, "\n");
-	}
-	
+        //  Write Serial Number
+        fprintf(fp, "S:%d\n", contact->si_no);
 
-	fclose(address_book->fp);
+        //  Write Name
+        fprintf(fp, "N:%s\n", contact->name[0]);
 
-	return e_success;
+        //  Write Phone Numbers (One Per Line)
+        for (int j = 0; j < contact->phone_count; j++)
+        {
+            fprintf(fp, "P:%s\n", contact->phone_numbers[j]);
+        }
+
+        //  Write Email Addresses (One Per Line)
+        for (int j = 0; j < contact->email_count; j++)
+        {
+            fprintf(fp, "E:%s\n", contact->email_addresses[j]);
+        }
+
+        fprintf(fp, "END\n");  //  Marks end of one contact
+    }
+
+    fclose(fp);
+    printf("Contacts successfully saved to %s\n", DEFAULT_FILE);
+    return e_success;
 }

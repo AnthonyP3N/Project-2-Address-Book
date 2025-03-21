@@ -9,23 +9,24 @@
 
 int main(void)
 {
-	AddressBook address_book;
-	Status ret;
+    AddressBook address_book;
+    Status ret;
 
-	/* Load the file from .csv file if any */
-	ret = load_file(&address_book);
+    /* Load the file from .csv file if any */
+    ret = load_file(&address_book);
 
-	if (ret == e_success)
-	{
-		/* Show all the available menu */
-		ret = menu(&address_book);
+    if (ret == e_success)
+    {
+        /* Show all the available menu */
+        ret = menu(&address_book);
+    }
 
-		if (ret == e_success)
-		{
-			/* Save the entries */
-			save_prompt(&address_book);
-		}
-	}
+    /*  Always ask to save before exiting */
+    if (address_book.count > 0 || address_book.count == 0)
+    {
+        save_prompt(&address_book);
+    }
 
-	return 0;
+    printf("Program exited successfully.\n");
+    return 0;
 }

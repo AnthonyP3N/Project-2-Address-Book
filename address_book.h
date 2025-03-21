@@ -68,6 +68,8 @@ typedef struct
 	char phone_numbers[PHONE_NUMBER_COUNT][NUMBER_LEN];
 	char email_addresses[EMAIL_ID_COUNT][EMAIL_ID_LEN];
 	int si_no;
+	int phone_count;
+	int email_count;
 } ContactInfo;
 
 typedef struct
