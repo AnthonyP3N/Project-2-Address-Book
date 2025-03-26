@@ -99,8 +99,26 @@ Status list_contacts(AddressBook *address_book, const char *title, int *index, c
         printf("--------------------------------------------------------------------------------------------------------------\n");
     }
 
-    printf("\nPress ENTER to return to the main menu...");
-    while (getchar() != '\n');
+    printf("\n[N]ext | [P]revious | [Q]uit: ");
+        char choice = getchar();
+        while (getchar() != '\n');
+        int current_page=0;
+        int total_pages = 100;
+        if (choice == 'N' || choice == 'n')
+        {
+            if (current_page < total_pages - 1)
+                current_page++;
+        }
+        else if (choice == 'P' || choice == 'p')
+        {
+            if (current_page > 0)
+                current_page--;
+        }
+        else if (choice == 'Q' || choice == 'q')
+        {
+            return e_exit;
+        }
+
     return e_success;
 }
 
